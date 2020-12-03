@@ -15,10 +15,9 @@ import 'package:flutter/material.dart';
 // class _AudioState extends State<Audio> {
 //
 class Audio extends StatelessWidget {
-  final Music playMusicRun;
   final List<Music> _playMusicList;
   final String url;
-  Audio(this.playMusicRun, this.url, this._playMusicList);
+  Audio(this.url, this._playMusicList);
 
   Widget build(BuildContext context) {
     Row buildButtonColumn(IconData icon, String label, url) {
@@ -79,18 +78,12 @@ class Audio extends StatelessWidget {
                       onPressed: () {
                         Navigator.push(
                           context,
-                          new MaterialPageRoute(builder: (context) => new SecondScreen(
-                            // music: _playMusicList.toList()[_playMusicList.toList().length - 1],
-                            // music: playMusicRun,
-                            // musics: _playMusicList,
-                          )),
+                          new MaterialPageRoute(builder: (context) => new SecondScreen()),
                         );
                       },
                     ),
                     new Expanded(
-                        child: new MusicPlay(
-                          music: playMusicRun,
-                        )
+                        child: new MusicPlay()
                     ),
                     // buildButtonColumn(Icons.play_arrow, '', ''),
                     buildButtonColumn(Icons.list, '', _playMusicList)

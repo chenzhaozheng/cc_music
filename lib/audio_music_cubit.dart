@@ -9,6 +9,7 @@ class AudioMusicCubit extends Cubit<Music> {
     isPlay: false,
   ));
   void setMusic(Music music) => emit(music);
+  getMusic() => this.state;
 }
 
 class ChangeAudioMusicBlocState {

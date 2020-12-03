@@ -2,8 +2,10 @@ import 'dart:convert';
 // import 'package:audioplayers/audioplayers.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:cc_music/audio_cubit.dart';
+import 'package:cc_music/audio_duration_cubit.dart';
 import 'package:cc_music/audio_music_cubit.dart';
 import 'package:cc_music/audio_musics_cubit.dart';
+import 'package:cc_music/audio_position_cubit.dart';
 import 'package:cc_music/common/audio.dart';
 import 'package:cc_music/music/music_list.dart';
 import 'package:cc_music/music_cubit.dart';
@@ -263,9 +265,8 @@ class _AudioPlayHomePageState extends State with SingleTickerProviderStateMixin 
             ),
           ),
           bottomNavigationBar: new Audio(
-              playMusicRun,
-              url,
-              _playMusicList
+            url,
+            _playMusicList
           ),
           // bottomNavigationBar: new Audio(),
         ),
@@ -302,6 +303,12 @@ void main() {
         ),
         BlocProvider<AudioMusicCubit>(
           create: (context) => AudioMusicCubit(),
+        ),
+        BlocProvider<AudioDurationCubit>(
+          create: (context) => AudioDurationCubit(),
+        ),
+        BlocProvider<AudioPositionCubit>(
+          create: (context) => AudioPositionCubit(),
         )
       ],
       child: new AudioPlayHomePage()

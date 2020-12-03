@@ -48,7 +48,6 @@ class SecondScreen extends StatelessWidget {
                             // setMusic: context.read<AudioMusicCubit>().setMusic,
                             musics: musics,
                             audioPlayer: audioPlayer
-
                           )
                         )
                       )

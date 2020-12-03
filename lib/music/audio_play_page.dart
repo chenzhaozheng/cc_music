@@ -1,8 +1,13 @@
 import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:cc_music/audio_duration_cubit.dart';
+import 'package:cc_music/audio_music_cubit.dart';
+import 'package:cc_music/audio_musics_cubit.dart';
+import 'package:cc_music/audio_position_cubit.dart';
 import 'package:cc_music/common/music.dart';
 import 'package:cc_music/main.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class AudioPlaybackPage extends StatefulWidget {
   final musics;
@@ -32,9 +37,11 @@ class _AudioPlaybackPageState extends State<AudioPlaybackPage>  {
     // _audioPlayer = AudioPlayer(mode: mode);
     _audioPlayer = widget.audioPlayer;
     _durationSubscription = _audioPlayer.onDurationChanged.listen((duration) {
-      setState(() => {
-        _duration = duration
-      });
+      // setState(() => {
+      //   _duration = duration
+      // });
+      context.read<AudioDurationCubit>().setDuration(duration);
+
       if (Theme.of(context).platform == TargetPlatform.iOS) {
         _audioPlayer.startHeadlessService();
         _audioPlayer.setNotification(
@@ -52,17 +59,20 @@ class _AudioPlaybackPageState extends State<AudioPlaybackPage>  {
     // 监听进度
     _positionSubscription = _audioPlayer.onAudioPositionChanged.listen((p) => setState(() {
       print("监听进度...");
-      _position = p;
+      // _position = p;
+      context.read<AudioPositionCubit>().setPosition(p);
     }));
 
     // 监听报错
     _playerErrorSubscription = _audioPlayer.onPlayerError.listen((msg) {
       print("监听报错");
       print('audioPlayer error : $msg');
-      setState(() {
-        _duration = Duration(seconds: 0);
-        _position = Duration(seconds: 0);
-      });
+      // setState(() {
+      //   _duration = Duration(seconds: 0);
+      //   _position = Duration(seconds: 0);
+      // });
+      context.read<AudioDurationCubit>().setDuration(Duration(seconds: 0));
+      context.read<AudioPositionCubit>().setPosition(Duration(seconds: 0));
     });
     // 播放状态改变
     _audioPlayer.onPlayerStateChanged.listen((state) {
@@ -104,9 +114,10 @@ class _AudioPlaybackPageState extends State<AudioPlaybackPage>  {
     print("停止");
     final result = await _audioPlayer.stop();
     if (result == 1) {
-      setState(() {
-        _position = Duration();
-      });
+      // setState(() {
+      //   _position = Duration();
+      // });
+      context.read<AudioPositionCubit>().setPosition(Duration());
     }
   }
 
@@ -118,7 +129,8 @@ class _AudioPlaybackPageState extends State<AudioPlaybackPage>  {
     }
   }
 
-  var _positionText = '', _durationText = '';
+  var _positionText = '',
+      _durationText = '';
 
   @override
   void initState() {
@@ -143,76 +155,90 @@ class _AudioPlaybackPageState extends State<AudioPlaybackPage>  {
     // 播放完成
     _playerCompleteSubscription = _audioPlayer.onPlayerCompletion.listen((event) {
       print("播放完成");
-      setState(() {
-        _position = Duration();
-      });
+      // setState(() {
+      //   _position = Duration();
+      // });
+      context.read<AudioPositionCubit>().setPosition(Duration());
+      // var musics = context.read<AudioMusicsCubit>();
+      var musics = BlocProvider.of<AudioMusicsCubit>(context).getMusics();
+      var music = context.read<AudioMusicCubit>().getMusic();
       var nextIndex = 0;
       var index = 0;
-      widget.musics.forEach((element) {
+      musics.forEach((element) {
         index++;
-        if (element.mp3Rid == widget.music.mp3Rid) {
+        if (element.mp3Rid == music.mp3Rid) {
           nextIndex = index;
         }
       });
-      if (widget.musics.length == nextIndex) {
+      if (musics.length == nextIndex) {
         nextIndex = 0;
       }
       print('musics');
-      print(widget.musics);
+      // print(widget.musics);
       print(nextIndex);
-      _play(widget.musics[nextIndex]);
+      // _play(widget.musics[nextIndex]);
+      context.read<AudioMusicCubit>().setMusic(musics[nextIndex]);
       // context.read<And>().increment(2);
       // widget.setMusic(widget.musics[nextIndex]);
     });
-
     return Scaffold(
       // appBar: AppBar(),
       body: Column(
         children: <Widget>[
-          Text(
-              widget.music.name
-          ),
-          Text(
-            _position != null
-                ? '${_positionText ?? ''} / ${_durationText ?? ''}'
-                : _duration != null ? _durationText : '',
-          ),
-          Padding(
-              padding: EdgeInsets.all(12.0),
-              child: Stack(
-                children: [
-                  Slider(
-                    onChanged: (v) {
-                      // ignore: non_constant_identifier_names
-                      final Position = v * _duration.inMilliseconds;
-                      _audioPlayer.seek(Duration(milliseconds:  Position.round()));
-                    },
-                    value: (_position != null &&
-                        _duration !=null &&
-                        _position.inMilliseconds > 0 &&
-                        _position.inMilliseconds < _duration.inMilliseconds)
-                        ? _position.inMilliseconds / _duration.inMilliseconds
-                        : 0.0,
+          BlocBuilder<AudioDurationCubit, Duration>(
+            builder: (context, _duration) =>
+            BlocBuilder<AudioPositionCubit, Duration>(
+              builder:  (context, _position) => Column(
+                children: <Widget>[
+                  BlocBuilder<AudioMusicCubit, Music>(
+                    builder: (context, music) => new Text(
+                      music.name,
+                    ),
                   ),
-                ],
+                  Text(
+                    _position != null
+                        ? '${_positionText ?? ''} / ${_durationText ?? ''}'
+                        : _duration != null ? _durationText : '',
+                  ),
+                  Padding(
+                      padding: EdgeInsets.all(12.0),
+                      child: Stack(
+                        children: [
+                          Slider(
+                            onChanged: (v) {
+                              // ignore: non_constant_identifier_names
+                              final Position = v * _duration.inMilliseconds;
+                              _audioPlayer.seek(Duration(milliseconds:  Position.round()));
+                            },
+                            value: (_position != null &&
+                                _duration !=null &&
+                                _position.inMilliseconds > 0 &&
+                                _position.inMilliseconds < _duration.inMilliseconds)
+                                ? _position.inMilliseconds / _duration.inMilliseconds
+                                : 0.0,
+                          ),
+                        ],
+                      )
+                  ),
+                  Row(
+                    children: <Widget>[
+                      IconButton(icon: Icon(Icons.play_arrow), onPressed: () {
+                        _play(playMusicRun);
+                      }),
+                      IconButton(icon: Icon(Icons.pause), onPressed: () {
+                        _pause();
+                      }),
+                      IconButton(icon: Icon(Icons.stop), onPressed: () {
+                        _stop();
+                      })
+                    ],
+                  ),
+                ]
               )
-          ),
-          Row(
-            children: <Widget>[
-              IconButton(icon: Icon(Icons.play_arrow), onPressed: () {
-                _play(playMusicRun);
-              }),
-              IconButton(icon: Icon(Icons.pause), onPressed: () {
-                _pause();
-              }),
-              IconButton(icon: Icon(Icons.stop), onPressed: () {
-                _stop();
-              })
-            ],
-          ),
-        ],
-      ),
-      // bottomNavigationBar: _buildBottomNavigationBar(),
+            )
+          )
+        ]
+      )// bottomNavigationBar: _buildBottomNavigationBar(),
     );
   }
 
