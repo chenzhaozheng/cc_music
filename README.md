@@ -1,17 +1,19 @@
 # cc_music
 
-A new Flutter project.
+## 音乐播放项目
 
-## Getting Started
+## 目前功能
+1. 支持加入播放列表
+2. 支持自动播放，自动切换下一首
+3. 支持搜索歌曲
+4. 界面支持翻页
 
-This project is a starting point for a Flutter application.
+## 后续功能
+1. 支持上下一首歌曲切换
+2. 支持随机播放
+3. 播放列表切换歌曲
+4. 底部动画播放效果
+5. 支持视频
+6. 支持专辑
 
-A few resources to get you started if this is your first Flutter project:
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.

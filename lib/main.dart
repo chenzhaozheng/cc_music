@@ -58,14 +58,16 @@ class AudioPlayHomePage extends StatefulWidget {
 class _AudioPlayHomePageState extends State with SingleTickerProviderStateMixin {
 
   final TextEditingController _controller = new TextEditingController();
-  TabController _tabController; //需要定义一个Controller
+  TabController _tabController; //// 需要定义一个Controller
   List tabs = ["我的", "发现", "视频"];
   List<Music> _playMusicList = new List<Music>();
   var list2 = <Music>[];
-
+  var searchContent = '';
+  var listPage = 0;
+  ScrollController _scrollController = ScrollController();
 
   _getMusics(content) async {
-    var url = 'https://search.kuwo.cn/r.s?all=$content&ft=music&itemset=web_2013&client=kt&pn=0&rn=20&rformat=json&encoding=utf8';
+    var url = 'https://search.kuwo.cn/r.s?all=$content&ft=music&itemset=web_2013&client=kt&pn=${listPage}&rn=20&rformat=json&encoding=utf8';
     print(url);
     String result;
     try {
@@ -78,9 +80,6 @@ class _AudioPlayHomePageState extends State with SingleTickerProviderStateMixin 
         // ignore: non_constant_identifier_names
         var JSON = new JsonCodec();
         Map<String, dynamic> data2 = JSON.decode(response.data.replaceAll("'",'"'));
-        setState(() {
-          list2 = [];
-        });
         for (var da in data2['abslist']) {
           setState(() {
             list2.add(new Music(name: da['NAME'], mp3Rid: da['MP3RID'], headImg: da['hts_MVPIC']));
@@ -111,8 +110,12 @@ class _AudioPlayHomePageState extends State with SingleTickerProviderStateMixin 
   void initState() {
     super.initState();
     _controller.addListener(() {
-      print('fuck you init state.');
       print(_controller.text);
+      setState(() {
+        list2 = [];
+        searchContent = _controller.text;
+        listPage = 0;
+      });
       _getMusics(_controller.text).then((res) => {
         print(res)
         // list2.push()
@@ -123,6 +126,9 @@ class _AudioPlayHomePageState extends State with SingleTickerProviderStateMixin 
         length: tabs.length
     );
     _tabController.addListener((){
+      print('==start==');
+      print(_tabController.index);
+      print('==end==');
       switch(_tabController.index){
       //   case 1: ...;
       // case 2: ... ;
@@ -138,12 +144,18 @@ class _AudioPlayHomePageState extends State with SingleTickerProviderStateMixin 
     );
     playMusicRun = new Music(name: 'music');
 
-
-    // url = 'http://antiserver.kuwo.cn/anti.s?rid=${mp3Rid}&response=res&format=mp3|aac&type=convert_url&br=320kmp3&agent=iPhone&callback=getlink&jpcallback=getlink.mp3';
-    // // url = 'http://ip.h5.nf01.sycdn.kuwo.cn/763ad5cfc60ec39ae50a6f285994397d/5f77503a/resource/n2/75/78/1887355251.mp3';
-    // print(url);
-
-    // _initAudioPlayer(musics, music);
+    _scrollController.addListener(() {
+      print('scroll ...');
+      if (_scrollController.position.pixels ==
+          _scrollController.position.maxScrollExtent) {
+        print('滑动到了最底部');
+        setState(() {
+          listPage = listPage + 1;
+        });
+        // _getMore();
+        _getMusics(searchContent);
+      }
+    });
   }
 
 
@@ -196,6 +208,7 @@ class _AudioPlayHomePageState extends State with SingleTickerProviderStateMixin 
                 controller: _tabController,
                 children: [
                   CustomScrollView(
+                    controller: _scrollController,
                     slivers: [
                       SliverAppBar(
                         pinned: true,
@@ -217,13 +230,14 @@ class _AudioPlayHomePageState extends State with SingleTickerProviderStateMixin 
                                 (BuildContext context, int index) {
                                 return new Container(
                                     child: new MusicListItem(
-                                      music: list2[index],
-                                      inPlayMusicList: _playMusicList.contains(list2[index]),
-                                      onChanged: _handleChanged,
-                                    )
+                                        music: list2[index],
+                                        inPlayMusicList: _playMusicList
+                                            .contains(list2[index]),
+                                        onChanged: _handleChanged
+                                    ),
                                 );
                             },
-                            childCount: list2.length //50个列表项
+                            childCount: list2.length,
                         ),
                       ),
                     ],

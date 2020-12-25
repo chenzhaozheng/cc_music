@@ -31,7 +31,8 @@ class MusicListItem extends StatelessWidget {
           backgroundColor: Colors.black54,
           child: new Text(music.name[0]),
         ),
-        title: new Text(music.name, style: _getTextStyle(context))
+        title: new Text(music.name + '>.<', style: _getTextStyle(context)),
+        // controller: _scrollController,
     );
   }
 }
