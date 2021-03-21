@@ -17,10 +17,12 @@ import 'package:flutter/material.dart';
 class Audio extends StatelessWidget {
   final List<Music> _playMusicList;
   final String url;
-  Audio(this.url, this._playMusicList);
+  final Music music;
+
+  Audio(this.url, this._playMusicList, this.music);
 
   Widget build(BuildContext context) {
-    Row buildButtonColumn(IconData icon, String label, url) {
+    Row buildButtonColumn(IconData icon, String label, url, Music music) {
       Color color = Theme.of(context).primaryColor;
       return new Row(
         children: <Widget>[
@@ -36,16 +38,17 @@ class Audio extends StatelessWidget {
                 ),
               ),
               onPressed: () {
-                print('url');
+                print('url === ');
                 print(url);
+                print('music');
+                // print(music);
                 Navigator.push(
                   context,
-                  new MaterialPageRoute(builder: (context) =>
-                  new MusicsListScreen(
-                    // musics: url,
-                    musics: url,
-                  )
-                  ),
+                  new MaterialPageRoute(
+                      builder: (context) => new MusicsListScreen(
+                          // musics: url,
+                          musics: url,
+                          music: music)),
                 );
               },
             ),
@@ -65,31 +68,31 @@ class Audio extends StatelessWidget {
             margin: EdgeInsets.all(0.0),
             child: Padding(
               padding: EdgeInsets.all(5.0),
-              child:  new Row(
+              child: new Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     new IconButton(
-                      icon:new ClipOval(
-                        child: Image.asset('images/zhizu.jpg',
+                      icon: new ClipOval(
+                        child: Image.asset(
+                          'images/zhizu.jpg',
                           fit: BoxFit.cover,
                         ),
                       ),
                       onPressed: () {
                         Navigator.push(
                           context,
-                          new MaterialPageRoute(builder: (context) => new SecondScreen()),
+                          new MaterialPageRoute(
+                              builder: (context) => new SecondScreen()),
                         );
                       },
                     ),
-                    new Expanded(
-                        child: new MusicPlay()
-                    ),
+                    new Expanded(child: new MusicPlay()),
                     // buildButtonColumn(Icons.play_arrow, '', ''),
-                    buildButtonColumn(Icons.list, '', _playMusicList)
+                    buildButtonColumn(Icons.list, '', url, music)
                   ]
-                //  buildButtonColumn(Icons.list, 'SHARE')
-              ),
+                  //  buildButtonColumn(Icons.list, 'SHARE')
+                  ),
             ),
           ),
         ),

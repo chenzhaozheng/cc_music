@@ -1,5 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
-// import 'package:audioplayers/audioplayers.dart';
+
 import 'package:audioplayers/audioplayers.dart';
 import 'package:cc_music/audio_cubit.dart';
 import 'package:cc_music/audio_duration_cubit.dart';
@@ -7,14 +8,13 @@ import 'package:cc_music/audio_music_cubit.dart';
 import 'package:cc_music/audio_musics_cubit.dart';
 import 'package:cc_music/audio_position_cubit.dart';
 import 'package:cc_music/common/audio.dart';
+import 'package:cc_music/common/music.dart';
 import 'package:cc_music/music/music_list.dart';
 import 'package:cc_music/music_cubit.dart';
-import 'package:flutter/material.dart';
+import 'package:cc_music/video/video_page.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:cc_music/common/music.dart';
-import 'dart:async';
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 // class ShareDataWidget extends InheritedWidget {
@@ -55,8 +55,8 @@ class AudioPlayHomePage extends StatefulWidget {
   _AudioPlayHomePageState createState() => _AudioPlayHomePageState();
 }
 
-class _AudioPlayHomePageState extends State with SingleTickerProviderStateMixin {
-
+class _AudioPlayHomePageState extends State
+    with SingleTickerProviderStateMixin {
   final TextEditingController _controller = new TextEditingController();
   TabController _tabController; //// 需要定义一个Controller
   List tabs = ["我的", "发现", "视频"];
@@ -67,25 +67,36 @@ class _AudioPlayHomePageState extends State with SingleTickerProviderStateMixin 
   ScrollController _scrollController = ScrollController();
 
   _getMusics(content) async {
-    var url = 'https://search.kuwo.cn/r.s?all=$content&ft=music&itemset=web_2013&client=kt&pn=${listPage}&rn=20&rformat=json&encoding=utf8';
+    var url =
+        //&ft=music&client=kt&itemset=web_2013
+        //callback=searchMusicResult&
+        'http://search.kuwo.cn/r.s?all=$content&ft=music&client=kt&cluster=0&pn=${listPage}&rn=20&rformat=json&encoding=utf8&vipver=MUSIC_8.0.3.1&';
+    // 'https://search.kuwo.cn/r.s?all=$content&pn=${listPage}&rn=20&rformat=json&encoding=utf8';
     print(url);
     String result;
     try {
-      var response = await Dio().get(url,
-        options: Options(
-            responseType: ResponseType.json
-        ),
+      var response = await Dio().get(
+        url,
+        options: Options(responseType: ResponseType.json),
       );
-      try{
+      try {
         // ignore: non_constant_identifier_names
         var JSON = new JsonCodec();
-        Map<String, dynamic> data2 = JSON.decode(response.data.replaceAll("'",'"'));
+        Map<String, dynamic> data2 =
+            JSON.decode(response.data.replaceAll("'", '"'));
         for (var da in data2['abslist']) {
+          print(da);
+          final name = da['NAME'].replaceAll('&nbsp;', '');
+          final artist = da['ARTIST'].replaceAll('&nbsp;', '');
           setState(() {
-            list2.add(new Music(name: da['NAME'], mp3Rid: da['MP3RID'], headImg: da['hts_MVPIC']));
+            list2.add(new Music(
+                name: name,
+                mp3Rid: da['MP3RID'],
+                headImg: da['hts_MVPIC'],
+                artist: artist));
           });
         }
-      } catch(e) {
+      } catch (e) {
         print("Error: $e");
       }
     } catch (exception) {
@@ -93,6 +104,7 @@ class _AudioPlayHomePageState extends State with SingleTickerProviderStateMixin 
       result = 'Failed getting IP address';
     }
   }
+
   // @override
   // void initState() {
   //   super.initState();
@@ -117,31 +129,26 @@ class _AudioPlayHomePageState extends State with SingleTickerProviderStateMixin 
         listPage = 0;
       });
       _getMusics(_controller.text).then((res) => {
-        print(res)
-        // list2.push()
-      });
+            print(res)
+            // list2.push()
+          });
     });
-    _tabController = TabController(
-        vsync: this,
-        length: tabs.length
-    );
-    _tabController.addListener((){
+    _tabController = TabController(vsync: this, length: tabs.length);
+    _tabController.addListener(() {
       print('==start==');
       print(_tabController.index);
       print('==end==');
-      switch(_tabController.index){
-      //   case 1: ...;
-      // case 2: ... ;
+      switch (_tabController.index) {
+        //   case 1: ...;
+        // case 2: ... ;
       }
     });
-    _playMusicList.add(
-        new Music(
-          name: '盛夏光年',
-          mp3Rid: 'MP3_75712216',
-          headImg: 'https://img4.kuwo.cn/wmvpic/324/9/5/3351076170.jpg',
-          isPlay: false,
-        )
-    );
+    _playMusicList.add(new Music(
+      name: '盛夏光年',
+      mp3Rid: 'MP3_75712216',
+      headImg: 'https://img4.kuwo.cn/wmvpic/324/9/5/3351076170.jpg',
+      isPlay: false,
+    ));
     playMusicRun = new Music(name: 'music');
 
     _scrollController.addListener(() {
@@ -158,10 +165,8 @@ class _AudioPlayHomePageState extends State with SingleTickerProviderStateMixin 
     });
   }
 
-
   @override
   Widget build(BuildContext context) {
-
     void _handleChanged(Music music, bool inPlayMusicList) {
       var isRepeat = false;
       var index = 0;
@@ -173,18 +178,19 @@ class _AudioPlayHomePageState extends State with SingleTickerProviderStateMixin 
       });
       setState(() {
         playMusicRun = music;
-        if (!isRepeat)
-          if (inPlayMusicList)
-            _playMusicList.add(music);
-          else
-            _playMusicList.remove(music);
+        if (!isRepeat) if (inPlayMusicList)
+          _playMusicList.add(music);
+        else
+          _playMusicList.remove(music);
       });
       context.read<AudioMusicsCubit>().setMusics(_playMusicList);
       context.read<AudioMusicCubit>().setMusic(music);
       // context.read()<context>
     }
+
     var mp3Rid = playMusicRun.mp3Rid;
-    var url = 'http://antiserver.kuwo.cn/anti.s?rid=$mp3Rid&response=res&format=mp3|aac&type=convert_url&br=320kmp3&agent=iPhone&callback=getlink&jpcallback=getlink.mp3';
+    var url =
+        'http://antiserver.kuwo.cn/anti.s?rid=$mp3Rid&response=res&format=mp3|aac&type=convert_url&br=320kmp3&agent=iPhone&callback=getlink&jpcallback=getlink.mp3';
     // var music = widget.music;
     // var musics = widget.musics;
     // var music = list2[0];
@@ -192,98 +198,84 @@ class _AudioPlayHomePageState extends State with SingleTickerProviderStateMixin 
     // var musics = list2;
     // return BlocListener<MusicCubit>
 
-
     return new MaterialApp(
-        title: 'test1',
-        home: Scaffold(
-          appBar: AppBar(
+      title: 'test1',
+      home: Scaffold(
+        appBar: AppBar(
             title: new Text("Music"),
             bottom: TabBar(
-              controller: _tabController,
-              tabs: tabs.map((e) => Tab(text: e)).toList()
-            )
-          ),
-          body: Scrollbar(
-            child: TabBarView(
                 controller: _tabController,
-                children: [
-                  CustomScrollView(
-                    controller: _scrollController,
-                    slivers: [
-                      SliverAppBar(
-                        pinned: true,
-                        expandedHeight: 250.0,
-                        flexibleSpace: FlexibleSpaceBar(
-                          title:  new TextField(
-                            controller: _controller,
-                            decoration:  new InputDecoration(
-                                hintText: 'search music'
-                            ),
-                          ),
-                          background: Image.asset(
-                            "images/zhizu.jpg", fit: BoxFit.cover,),
-                        ),
-                      ),
-                      new SliverFixedExtentList(
-                        itemExtent: 50.0,
-                        delegate: new SliverChildBuilderDelegate(
-                                (BuildContext context, int index) {
-                                return new Container(
-                                    child: new MusicListItem(
-                                        music: list2[index],
-                                        inPlayMusicList: _playMusicList
-                                            .contains(list2[index]),
-                                        onChanged: _handleChanged
-                                    ),
-                                );
-                            },
-                            childCount: list2.length,
-                        ),
-                      ),
-                    ],
-                  ),
-                  new ListTile(
-                    title: new Text('我不愿让你一个人'),
-                    subtitle: new Text('五月天'),
-                    leading: new Icon(
-                        Icons.theaters,
-                        color: Colors.blue[500]
+                tabs: tabs.map((e) => Tab(text: e)).toList())),
+        body: Scrollbar(
+          child: TabBarView(controller: _tabController, children: [
+            CustomScrollView(
+              controller: _scrollController,
+              slivers: [
+                SliverAppBar(
+                  pinned: true,
+                  expandedHeight: 250.0,
+                  flexibleSpace: FlexibleSpaceBar(
+                    title: new TextField(
+                      controller: _controller,
+                      decoration: new InputDecoration(hintText: 'search music'),
+                    ),
+                    background: Image.asset(
+                      "images/zhizu.jpg",
+                      fit: BoxFit.cover,
                     ),
                   ),
-                  // new ListTile(
-                  //   title: new Text('我不愿让你一个人'),
-                  //   subtitle: new Text('五月天'),
-                  //   leading: new Icon(
-                  //       Icons.theaters,
-                  //       color: Colors.blue[500]
-                  //   ),
-                  // ),
-                  Padding(
-                    padding: EdgeInsets.all(12.0),
-                    child: Stack(
-                        children: [
-                          BlocBuilder<MusicCubit, int>(
-                            builder: (context, count) => Center(child: Text('$count')),
-                          ),
-                          BlocBuilder<AudioCubit, AudioPlayer>(
-                            builder: (context, x) => Center(child: Text('xx')),
-                          ),
-                          FloatingActionButton(
-                            child: const Icon(Icons.add),
-                            onPressed: () => context.read<MusicCubit>().increment(2),
-                          )
-                        ]
-                    )
+                ),
+                new SliverFixedExtentList(
+                  itemExtent: 50.0,
+                  delegate: new SliverChildBuilderDelegate(
+                    (BuildContext context, int index) {
+                      return new Container(
+                        child: new MusicListItem(
+                            playMusicRun: playMusicRun,
+                            music: list2[index],
+                            inPlayMusicList:
+                                _playMusicList.contains(list2[index]),
+                            onChanged: _handleChanged),
+                      );
+                    },
+                    childCount: list2.length,
                   ),
-                ]
+                ),
+              ],
             ),
-          ),
-          bottomNavigationBar: new Audio(
-            url,
-            _playMusicList
-          ),
-          // bottomNavigationBar: new Audio(),
+            new ListTile(
+              title: new Text('我不愿让你一个人'),
+              subtitle: new Text('五月天'),
+              leading: new Icon(Icons.theaters, color: Colors.blue[500]),
+            ),
+            // new ListTile(
+            //   title: new Text('我不愿让你一个人'),
+            //   subtitle: new Text('五月天'),
+            //   leading: new Icon(
+            //       Icons.theaters,
+            //       color: Colors.blue[500]
+            //   ),
+            // ),
+            Padding(
+                padding: EdgeInsets.all(12.0),
+                child: Stack(children: [
+                  new VideoPageState(),
+                  BlocBuilder<MusicCubit, int>(
+                    builder: (context, count) => Center(child: Text('$count')),
+                  ),
+                  BlocBuilder<AudioCubit, AudioPlayer>(
+                    builder: (context, x) => Center(child: Text('xx')),
+                  ),
+                  FloatingActionButton(
+                    child: const Icon(Icons.add),
+                    onPressed: () => context.read<MusicCubit>().increment(2),
+                  )
+                ])),
+          ]),
         ),
+        bottomNavigationBar: new Audio(url, _playMusicList, playMusicRun),
+        // bottomNavigationBar: new Audio(),
+      ),
     );
   }
 }
@@ -304,35 +296,31 @@ void main() {
   //     )
   //   )
   // ));
-  runApp(MultiBlocProvider(
-      providers: [
-        BlocProvider<MusicCubit>(
-          create: (context) => MusicCubit(),
-        ),
-        BlocProvider<AudioCubit>(
-          create: (context) => AudioCubit(),
-        ),
-        BlocProvider<AudioMusicsCubit>(
-          create: (context) => AudioMusicsCubit(),
-        ),
-        BlocProvider<AudioMusicCubit>(
-          create: (context) => AudioMusicCubit(),
-        ),
-        BlocProvider<AudioDurationCubit>(
-          create: (context) => AudioDurationCubit(),
-        ),
-        BlocProvider<AudioPositionCubit>(
-          create: (context) => AudioPositionCubit(),
-        )
-      ],
-      child: new AudioPlayHomePage()
-  ));
+  runApp(MultiBlocProvider(providers: [
+    BlocProvider<MusicCubit>(
+      create: (context) => MusicCubit(),
+    ),
+    BlocProvider<AudioCubit>(
+      create: (context) => AudioCubit(),
+    ),
+    BlocProvider<AudioMusicsCubit>(
+      create: (context) => AudioMusicsCubit(),
+    ),
+    BlocProvider<AudioMusicCubit>(
+      create: (context) => AudioMusicCubit(),
+    ),
+    BlocProvider<AudioDurationCubit>(
+      create: (context) => AudioDurationCubit(),
+    ),
+    BlocProvider<AudioPositionCubit>(
+      create: (context) => AudioPositionCubit(),
+    )
+  ], child: new AudioPlayHomePage()));
 }
 
 Future<void> initPlatformState() async {
   try {
     // print("initPlatformState");
     // await FlutterPlugin.initialize();
-  } on PlatformException {
-  }
+  } on PlatformException {}
 }
