@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:ui';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:cc_music/bloc/audio_cubit.dart';
@@ -20,6 +21,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 import 'bloc/audio_search_musics_cubit.dart';
 import 'common/search_delegate.dart';
@@ -203,177 +205,19 @@ class _AudioPlayHomePageState extends State<AudioPlayHomePage>
 
   @override
   void dispose() {
-    // _audioPlayer.dispose();
     _durationSubscription?.cancel();
     _positionSubscription?.cancel();
-    // _playerCompleteSubscription?.cancel();
     _playerErrorSubscription?.cancel();
     _playerStateSubscription?.cancel();
     super.dispose();
     focusNode.dispose();
   }
 
-  // @override
-  // List<Widget> buildActions(BuildContext context) {
-  //   return [
-  //     IconButton(
-  //       icon: Icon(icons.clear),
-  //       onPressed: () => query = "",
-  //     )
-  //   ]
-  // }
-  //
-  // @override
-  // Widget buildLeading(BuildContext context) {
-  //   return IconButton(icon: Animation(
-  //     icon: AnimatedIcons.menu_arrow,
-  //     progress: transitionAnimation
-  //   ), onPressed: onPressed)
-  // }
-  //
-  // @override
-  // Widget buildResults(BuildContext context) {
-  //   return Container(
-  //     width: 100.0,
-  //     height: 100.0,
-  //     child: Card(
-  //       color: Colors.redAccent,
-  //       child: Center(
-  //         child: Text(query),
-  //       )
-  //     )
-  //   )
-  // }
-
   @override
   Widget build(BuildContext context) {
-    var mp3Rid = playMusicRun.mp3Rid;
-    var url =
-        'http://antiserver.kuwo.cn/anti.s?rid=$mp3Rid&response=res&format=mp3|aac&type=convert_url&br=320kmp3&agent=iPhone&callback=getlink&jpcallback=getlink.mp3';
-
-    void _handleChanged(Music music, bool inPlayMusicList) {
-      // FocusScope.of(context).autofocus(blankNode);
-      // focusNode.dispose();
-      // focusNode.unfocus();
-      SystemChannels.textInput.invokeMethod('TextInput.hide');
-      var isRepeat = false;
-      var index = 0;
-      _playMusicList.forEach((element) {
-        if (element.mp3Rid == music.mp3Rid) {
-          isRepeat = true;
-        }
-        index++;
-      });
-      playMusicRun = music;
-      if (!isRepeat) if (inPlayMusicList)
-        _playMusicList.add(music);
-      else
-        _playMusicList.remove(music);
-
-      BlocProvider.of<AudioMusicsCubit>(context).setMusics(_playMusicList);
-      BlocProvider.of<AudioMusicCubit>(context).setMusic(music);
-      BlocProvider.of<AudioCubit>(context).play(context, music);
-
-      // context.read<AudioCubit>().play(context, music);
-    }
-
-    const recentSuggest = ["五月天", "周深"];
-
     return MaterialApp(
-      title: 'test1',
-      home: Scaffold(
-        // appBar: AppBar(
-        //   title: SizedBox(
-        //     height: 0,
-        //     // child: Image.asset('images/zhoujielun.jpg', fit: BoxFit.cover),
-        //   ),
-        //   actions: <Widget>[
-        //     // SearchIcon(),
-        //     // IconButton(
-        //     //     icon: Icon(Icons.search),
-        //     //     onPressed: () {
-        //     //       print('start search');
-        //     //       showSearch(context: context, delegate: SearchBarDelegate());
-        //     //     })
-        //   ],
-        //   // bottom: TabBar(
-        //   //     controller: _tabController,
-        //   //     tabs: tabs.map((e) => Tab(text: e)).toList())
-        // ),
-        // body: GestureDetector(
-        //   onTap: () {
-        //     // 点击空白页面关闭键盘
-        //     print('body tap');
-        //     FocusScope.of(context).requestFocus(blankNode);
-        //   },
-        //   child: Scrollbar(
-        //       // child: TabBarView(controller: _tabController, children: [
-        //       //   SearchIcon(),
-        //       //   CustomScrollView(
-        //       //     controller: _scrollController,
-        //       //     slivers: [
-        //       //       SliverAppBar(
-        //       //         pinned: true,
-        //       //         expandedHeight: 250.0,
-        //       //         flexibleSpace: FlexibleSpaceBar(
-        //       //           title: TextField(
-        //       //             focusNode: focusNode,
-        //       //             controller: _controller,
-        //       //             decoration: InputDecoration(hintText: 'search music'),
-        //       //             autofocus: false,
-        //       //           ),
-        //       //           background: Image.asset(
-        //       //             "images/zhizu.jpg",
-        //       //             fit: BoxFit.cover,
-        //       //           ),
-        //       //         ),
-        //       //       ),
-        //       //       SliverFixedExtentList(
-        //       //         itemExtent: 50.0,
-        //       //         delegate: SliverChildBuilderDelegate(
-        //       //           (BuildContext context, int index) {
-        //       //             return Container(
-        //       //               child: MusicListItem(
-        //       //                   playMusicRun: playMusicRun,
-        //       //                   music: list2[index],
-        //       //                   inPlayMusicList:
-        //       //                       _playMusicList.contains(list2[index]),
-        //       //                   onChanged: _handleChanged),
-        //       //               // child:
-        //       //             );
-        //       //           },
-        //       //           childCount: list2.length,
-        //       //         ),
-        //       //       ),
-        //       //     ],
-        //       //   ),
-        //       //   // Index(),
-        //       //   Padding(
-        //       //       padding: EdgeInsets.all(12.0),
-        //       //       child: Stack(children: [
-        //       //         VideoPageState(),
-        //       //         BlocBuilder<MusicCubit, int>(
-        //       //           builder: (context, count) =>
-        //       //               Center(child: Text('$count')),
-        //       //         ),
-        //       //         BlocBuilder<AudioCubit, AudioState>(
-        //       //           builder: (context, x) => Center(child: Text('xx')),
-        //       //         ),
-        //       //         FloatingActionButton(
-        //       //           child: const Icon(Icons.add),
-        //       //           onPressed: () => context.read<MusicCubit>().increment(2),
-        //       //         )
-        //       //       ])),
-        //       // ]),
-        //       child: SearchIcon()),
-        //
-        //   // bottomNavigationBar: new Audio(),
-        // ),
-        body: SearchIcon(),
-        bottomNavigationBar: BlocBuilder<AudioMusicCubit, AudioMusicState>(
-          builder: (context, x) => Audio(url, _playMusicList, playMusicRun),
-        ),
-      ),
+      title: '',
+      home: SearchIcon(),
     );
   }
 }

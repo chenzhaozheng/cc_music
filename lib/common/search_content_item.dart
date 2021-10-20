@@ -1,5 +1,7 @@
+import 'package:cc_music/common/search_delegate.dart';
 import 'package:flutter/material.dart';
 
+//D:\Code\flutter\packages\flutter\lib\src\material\search.dart
 typedef SearchItemCall = void Function(String item);
 
 class SearchItemView extends StatefulWidget {
@@ -8,7 +10,8 @@ class SearchItemView extends StatefulWidget {
 }
 
 class _SearchItemViewState extends State<SearchItemView> {
-  List<String> items = ['五月天', '周深', '毛不易', '华晨宇'];
+  // List<String> items = ['五月天', '周深', '毛不易', '华晨宇'];
+  List<String> items = [];
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -43,6 +46,11 @@ class _SearchItemState extends State<SearchItem> {
         ),
         onTap: () {
           print(widget.title);
+          // (new SearchBarDelegate()).query('cccc');
+          // this.query = 'ccc';
+          // showSuggestions(context);
+          // InputMethodManager()
+          // showSoftInput();
         },
       ),
       // color: Colors.white,

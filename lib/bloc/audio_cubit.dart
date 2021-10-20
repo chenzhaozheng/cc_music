@@ -15,11 +15,13 @@ class AudioCubit extends Cubit<AudioState> {
   // void setPlay(AudioPlayer audioPlayer) =>
   //     emit(state.clone()..audioPlayer = state.audioPlayer);
 
-  void play(context, Music music) async {
+  void play(context, Music music, int changeMusic) async {
     var stateRes = state.audioPlayer.state.toString();
     print('stateRes');
     print(stateRes);
-    if (stateRes != 'AudioPlayerState.STOPPED' && stateRes != 'null') {
+    if (stateRes != 'AudioPlayerState.STOPPED' &&
+        stateRes != 'null' &&
+        changeMusic == 1) {
       await this.stop(context);
     }
     Duration _position = BlocProvider.of<AudioPositionCubit>(context).state;
@@ -45,7 +47,7 @@ class AudioCubit extends Cubit<AudioState> {
     print(state.audioPlayer.state.toString());
   }
 
-  void pause(context) async {
+  void pause(context, Music music) async {
     // AudioPlayer _audioPlayer = state.audioPlayer;
     print("暂停");
     final result = await state.audioPlayer.pause();
@@ -88,7 +90,7 @@ class AudioCubit extends Cubit<AudioState> {
       }
     });
     BlocProvider.of<AudioMusicCubit>(context).setMusic(musics[mainIndex]);
-    this.play(context, musics[mainIndex]);
+    this.play(context, musics[mainIndex], 1);
   }
 
   // 下一首
@@ -109,7 +111,7 @@ class AudioCubit extends Cubit<AudioState> {
       }
     });
     BlocProvider.of<AudioMusicCubit>(context).setMusic(musics[mainIndex]);
-    this.play(context, musics[mainIndex]);
+    this.play(context, musics[mainIndex], 1);
   }
 
   // ignore: non_constant_identifier_names

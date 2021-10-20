@@ -1,11 +1,19 @@
+import 'dart:convert';
+
 import 'package:cc_music/bloc/audio_cubit.dart';
 import 'package:cc_music/bloc/audio_duration_cubit.dart';
 import 'package:cc_music/bloc/audio_music_cubit.dart';
 import 'package:cc_music/bloc/audio_music_state.dart';
+import 'package:cc_music/bloc/audio_musics_cubit.dart';
 import 'package:cc_music/bloc/audio_position_cubit.dart';
 import 'package:cc_music/bloc/audio_state.dart';
+import 'package:cc_music/bloc/audio_status_cubit.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'music_page.dart';
 
 class AudioPlaybackPage extends StatefulWidget {
   final musics;
@@ -154,43 +162,48 @@ class _AudioPlaybackPageState extends State<AudioPlaybackPage> {
     // 图片部分
     Widget imgSection = BlocBuilder<AudioMusicCubit, AudioMusicState>(
         builder: (context, musicState) => Container(
-            child: Image.network(
-                (musicState.music.headImg != null
-                    ? musicState.music.headImg
-                    : 'images/zhizu.jpg'),
-                width: 600.0,
-                height: 240.0,
-                fit: BoxFit.cover)));
+              child: (musicState.music.headImg != null
+                  ? Image.network(musicState.music.headImg,
+                      width: 600.0, height: 240.0, fit: BoxFit.cover)
+                  : Image.asset(
+                      'images/default_music.jpg',
+                      width: 600.0,
+                      height: 240.0,
+                      fit: BoxFit.cover,
+                    )),
+            ));
 
     Widget introSection = BlocBuilder<AudioMusicCubit, AudioMusicState>(
-        builder: (context, musicState) => Container(
-              child: Row(children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                        musicState.music.name != null
-                            ? musicState.music.name
-                            : '',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 30.0)),
-                    Text(musicState.music.artist != null
-                        ? musicState.music.artist
-                        : ''),
-                    Text('Love -- '),
-                  ],
-                )
-              ]),
-            ));
+      builder: (context, musicState) => Wrap(
+          spacing: 0,
+          runSpacing: 0,
+          alignment: WrapAlignment.start,
+          children: [
+            Row(
+              children: [],
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(musicState.music.name != null ? musicState.music.name : '',
+                    style:
+                        TextStyle(fontWeight: FontWeight.bold, fontSize: 30.0)),
+                Text(musicState.music.artist != null
+                    ? musicState.music.artist
+                    : ''),
+                Text('Love -- '),
+              ],
+            )
+          ]),
+    );
 
     // 播放进度
     Widget processing = Container(
         child: BlocBuilder<AudioDurationCubit, Duration>(
             builder: (context, _duration) => BlocBuilder<AudioPositionCubit,
                     Duration>(
-                builder: (context, _position) => Column(
-
-                        // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                builder: (context, _position) =>
+                    Column(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         // crossAxisAlignment: CrossAxisAlignment.spaceEvenly,
                         children: <Widget>[
                           Slider(
@@ -216,12 +229,16 @@ class _AudioPlaybackPageState extends State<AudioPlaybackPage> {
                               Text(
                                 _position != null
                                     ? '${_position ?? ''}'
-                                    : _duration != null ? _duration : '',
+                                    : _duration != null
+                                        ? _duration
+                                        : '',
                               ),
                               Text(
                                 _position != null
                                     ? '${_duration ?? ''}'
-                                    : _duration != null ? _duration : '',
+                                    : _duration != null
+                                        ? _duration
+                                        : '',
                               ),
                             ],
                           )
@@ -230,46 +247,108 @@ class _AudioPlaybackPageState extends State<AudioPlaybackPage> {
     // 播放按钮
     Widget videoSection = Container(
         child: BlocBuilder<AudioCubit, AudioState>(
-      builder: (context, _audioPlayer) => Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: <Widget>[
-          IconButton(
-              icon: Icon(Icons.first_page),
-              onPressed: () {
-                context.read<AudioCubit>().lastPlay(context);
-              }),
-          BlocBuilder<AudioMusicCubit, AudioMusicState>(
-              builder: (context, musicState) => IconButton(
-                  icon: Icon(Icons.play_arrow),
-                  onPressed: () {
-                    context.read<AudioCubit>().play(context, musicState.music);
-                  })),
-          IconButton(
-              icon: Icon(Icons.pause),
-              onPressed: () {
-                context.read<AudioCubit>().pause(context);
-              }),
-          IconButton(
-              icon: Icon(Icons.last_page),
-              onPressed: () {
-                context.read<AudioCubit>().nextPlay(context);
-              })
-        ],
-      ),
-    ));
+            builder: (context, _audioPlayer) => Column(
+                  children: [
+                    Padding(
+                        padding: EdgeInsets.only(
+                            left: 0, top: 0, bottom: 24.0, right: 0),
+                        child: processing),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: <Widget>[
+                        IconButton(
+                            icon: Icon(Icons.favorite_border),
+                            onPressed: () async {
+                              final prefs =
+                                  await SharedPreferences.getInstance();
+                              print('xx');
+                              print(BlocProvider.of<AudioMusicsCubit>(context)
+                                  .getMusics());
+                              var a = json.encode(
+                                  BlocProvider.of<AudioMusicsCubit>(context)
+                                      .getMusics());
+                              print('xx');
+                              print(a);
+                              print('xx');
+                              print(json.decode(a));
+                              print('xx');
+                              prefs.setString(
+                                  'counter',
+                                  json.encode(
+                                      BlocProvider.of<AudioMusicsCubit>(context)
+                                          .getMusics()));
+                              // context.read<AudioCubit>().pause(context);
+                            }),
+                        IconButton(
+                            icon: Icon(Icons.first_page),
+                            onPressed: () {
+                              context.read<AudioCubit>().lastPlay(context);
+                            }),
+
+                        BlocBuilder<AudioStatusCubit, String>(
+                            builder: (context, status) => status ==
+                                    'AudioPlayerState.PLAYING'
+                                ? BlocBuilder<AudioMusicCubit, AudioMusicState>(
+                                    builder: (context, musicState) =>
+                                        IconButton(
+                                            icon: Icon(Icons.pause),
+                                            onPressed: () {
+                                              context.read<AudioCubit>().pause(
+                                                  context, musicState.music);
+                                            }))
+                                : BlocBuilder<AudioMusicCubit, AudioMusicState>(
+                                    builder: (context, musicState) =>
+                                        IconButton(
+                                            icon: Icon(Icons.play_arrow),
+                                            onPressed: () {
+                                              context.read<AudioCubit>().play(
+                                                  context, musicState.music, 0);
+                                            }))),
+                        // IconButton(
+                        //     icon: Icon(Icons.pause),
+                        //     onPressed: () {
+                        //       context.read<AudioCubit>().pause(context);
+                        //     }),
+                        IconButton(
+                            icon: Icon(Icons.last_page),
+                            onPressed: () {
+                              context.read<AudioCubit>().nextPlay(context);
+                            }),
+                        IconButton(
+                            icon: Icon(Icons.list),
+                            onPressed: () async {
+                              // final prefs =
+                              //     await SharedPreferences.getInstance();
+                              // final counter = prefs.getString('counter') ?? '';
+                              // print(counter);
+                              // context.read<AudioCubit>().pause(context);
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => BlocBuilder<
+                                            AudioMusicCubit, AudioMusicState>(
+                                        builder: (context, x) =>
+                                            new MusicsListScreen())),
+                              );
+                            }),
+                      ],
+                    ),
+                  ],
+                )));
 
     return Scaffold(
         // appBar: AppBar(),
         body: Container(
-      padding: EdgeInsets.all(24.0),
+      padding:
+          EdgeInsets.only(left: 24.0, top: 24.0, bottom: 54.0, right: 24.0),
       child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: <Widget>[
-            imgSection,
-            introSection,
-            processing,
-            videoSection
-          ]),
+          // runAlignment: WrapAlignment.spaceBetween,
+          // alignment: WrapAlignment.center,
+          // direction: Axis.horizontal,
+          // spacing: 10,
+          // runSpacing: 20,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: <Widget>[imgSection, introSection, videoSection]),
     ));
   }
 }

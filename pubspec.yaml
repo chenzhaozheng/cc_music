@@ -38,6 +38,7 @@ dependencies:
   transparent_image: ^2.0.0
   webview_flutter: ^2.0.4
   toast: ^0.1.5
+  shared_preferences: ^0.5.1
 
 dev_dependencies:
   flutter_test:
@@ -59,6 +60,9 @@ flutter:
     - images/zhoujielun.jpg
     - images/890-loading-animation.gif
     - images/FoodBackground.jpg
+    - images/demo.png
+    - images/demo1.jpg
+    - images/default_music.jpg
   #     - images/a_dot_burr.jpeg
   #     - images/a_dot_ham.jpeg
 

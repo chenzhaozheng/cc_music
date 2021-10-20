@@ -22,18 +22,19 @@ class SearchBarDelegate extends SearchDelegate<String> {
   // // TODO: implement query
   // String get query => 'sss';
   // @override
-  // set query(String value) {
-  //   // TODO: implement query
-  //   super.query = value;
-  //
+  set query(String value) {
+    // TODO: implement
+    super.query = value;
+  }
 
   // String get query => 'test';
 
   // @override
-  // String get textInputAction => 'ddd';
+  // String get textInputAction;
 
   @override
   List<Widget> buildActions(BuildContext context) {
+    print('buildActions');
     //右侧显示内容 这里放清除按钮
     return [
       IconButton(
@@ -48,11 +49,13 @@ class SearchBarDelegate extends SearchDelegate<String> {
 
   @override
   Widget buildLeading(BuildContext context) {
+    print('buildLeading');
     //左侧显示内容 这里放了返回按钮
     return IconButton(
       icon: AnimatedIcon(
           icon: AnimatedIcons.menu_arrow, progress: transitionAnimation),
       onPressed: () {
+        print('onPressed');
         if (query.isEmpty) {
           close(context, null);
         } else {
@@ -67,6 +70,7 @@ class SearchBarDelegate extends SearchDelegate<String> {
 
   @override
   Widget buildResults(BuildContext context) {
+    print('buildResults');
     void _handleChanged(Music music, bool inPlayMusicList) {
       var isRepeat = false;
       var index = 0;
@@ -84,7 +88,7 @@ class SearchBarDelegate extends SearchDelegate<String> {
 
       BlocProvider.of<AudioMusicsCubit>(context).setMusics(_playMusicList);
       BlocProvider.of<AudioMusicCubit>(context).setMusic(music);
-      BlocProvider.of<AudioCubit>(context).play(context, music);
+      BlocProvider.of<AudioCubit>(context).play(context, music, 1);
     }
 
     BlocProvider.of<AudioSearchMusicsCubit>(context).queryMusics(query, 0);
@@ -123,36 +127,6 @@ class SearchBarDelegate extends SearchDelegate<String> {
         child: BlocBuilder<AudioSearchMusicsCubit, List<Music>>(
             builder: (context, musics) => Column(
                   children: [
-                    // Container(
-                    //   width: 200,
-                    //   height: 150,
-                    //   child: Padding(
-                    //     padding: EdgeInsets.all(10),
-                    //     child: Text('dddddddddddddddccccccccccccccccccc'),
-                    //   ),
-                    // ),
-                    // Column(
-                    //     crossAxisAlignment: CrossAxisAlignment.start,
-                    //     children: <Widget>[
-                    //       Container(
-                    //         color: Colors.blue,
-                    //         height: 50.0,
-                    //         width: 50.0,
-                    //       ),
-                    //       Container(
-                    //         color: Colors.yellow,
-                    //         height: 50.0,
-                    //         width: 50.0,
-                    //       ),
-                    //       Expanded(
-                    //           child: ListView(
-                    //         scrollDirection: Axis.vertical,
-                    //         children: [
-                    //           ListTile(title: Text('ccc')),
-                    //           ListTile(title: Text('xxxxx')),
-                    //         ],
-                    //       ))
-                    //     ]),
                     Row(
                       children: [
                         IconButton(
@@ -184,12 +158,14 @@ class SearchBarDelegate extends SearchDelegate<String> {
 
   @override
   Widget buildSuggestions(BuildContext context) {
+    print('buildSuggestions');
     //点击了搜索窗显示的页面
     return SearchContentView();
   }
 
   @override
   ThemeData appBarTheme(BuildContext context) {
+    print('appBarTheme');
     return super.appBarTheme(context);
   }
 }
