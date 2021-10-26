@@ -36,9 +36,10 @@ dependencies:
 #  fijkplayer: ^0.8.7
   qr_flutter: ^4.0.0
   transparent_image: ^2.0.0
-  webview_flutter: ^2.0.4
+#  webview_flutter: ^2.0.4
   toast: ^0.1.5
   shared_preferences: ^0.5.1
+  sprintf: ^5.0.0
 
 dev_dependencies:
   flutter_test:

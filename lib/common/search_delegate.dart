@@ -72,21 +72,34 @@ class SearchBarDelegate extends SearchDelegate<String> {
   Widget buildResults(BuildContext context) {
     print('buildResults');
     void _handleChanged(Music music, bool inPlayMusicList) {
+      // var isRepeat = false;
+      // var index = 0;
+      // _playMusicList.forEach((element) {
+      //   if (element.mp3Rid == music.mp3Rid) {
+      //     isRepeat = true;
+      //   }
+      //   index++;
+      // });
+      // playMusicRun = music;
+      // if (!isRepeat) if (inPlayMusicList)
+      //   _playMusicList.add(music);
+      // else
+      //   _playMusicList.remove(music);
+
       var isRepeat = false;
-      var index = 0;
-      _playMusicList.forEach((element) {
+      List<Music> playMusicList =
+          BlocProvider.of<AudioMusicsCubit>(context).getMusics();
+      playMusicList.forEach((element) {
         if (element.mp3Rid == music.mp3Rid) {
           isRepeat = true;
         }
-        index++;
       });
-      playMusicRun = music;
-      if (!isRepeat) if (inPlayMusicList)
-        _playMusicList.add(music);
-      else
-        _playMusicList.remove(music);
+      if (!isRepeat) playMusicList.add(music);
+      BlocProvider.of<AudioMusicsCubit>(context).setMusics(playMusicList);
+      Toast.show("已加入播放列表", context,
+          duration: Toast.LENGTH_SHORT, gravity: Toast.BOTTOM);
 
-      BlocProvider.of<AudioMusicsCubit>(context).setMusics(_playMusicList);
+      // BlocProvider.of<AudioMusicsCubit>(context).setMusics(_playMusicList);
       BlocProvider.of<AudioMusicCubit>(context).setMusic(music);
       BlocProvider.of<AudioCubit>(context).play(context, music, 1);
     }

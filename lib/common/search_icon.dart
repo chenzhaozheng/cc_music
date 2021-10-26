@@ -1,11 +1,15 @@
+import 'package:cc_music/bloc/audio_love_musics_cubit.dart';
+import 'package:cc_music/bloc/audio_love_musics_state.dart';
 import 'package:cc_music/bloc/audio_music_cubit.dart';
 import 'package:cc_music/bloc/audio_music_state.dart';
 import 'package:cc_music/common/search_delegate.dart';
+import 'package:cc_music/music/love_music_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cc_music/common/audio.dart';
 import 'music.dart';
+import 'package:sprintf/sprintf.dart';
 
 class SearchIcon extends StatefulWidget {
   @override
@@ -27,6 +31,8 @@ class _SearchIconState extends State<SearchIcon> {
     var mp3Rid = playMusicRun.mp3Rid;
     var url =
         'http://antiserver.kuwo.cn/anti.s?rid=$mp3Rid&response=res&format=mp3|aac&type=convert_url&br=320kmp3&agent=iPhone&callback=getlink&jpcallback=getlink.mp3';
+    var temp = BlocProvider.of<AudioLoveMusicsCubit>(context).getMusics();
+    var itemCount = sprintf("%s", [temp.length]);
 
     return Scaffold(
       appBar: AppBar(
@@ -75,35 +81,56 @@ class _SearchIconState extends State<SearchIcon> {
                   child: Container(
                       padding: const EdgeInsets.only(
                           bottom: 15.0, top: 15.0, left: 0, right: 0.0),
-                      child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                  left: 0, right: 10, top: 0, bottom: 0),
-                              child: Image.asset('images/demo.png',
-                                  fit: BoxFit.cover, width: 50, height: 50),
-                            ),
-                            Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    '我喜欢的音乐',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.normal,
-                                      fontSize: 16,
+                      child: BlocBuilder<AudioLoveMusicsCubit,
+                              AudioLoveMusicsState>(
+                          builder: (context, musicsState) => Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                          left: 0,
+                                          right: 10,
+                                          top: 0,
+                                          bottom: 0),
+                                      child: Image.asset('images/demo.png',
+                                          fit: BoxFit.cover,
+                                          width: 50,
+                                          height: 50),
                                     ),
-                                  ),
-                                  Text(
-                                    '50首',
-                                    style: TextStyle(color: Colors.green),
-                                  )
-                                ])
-                          ])),
+                                    Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            '我喜欢的音乐',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.normal,
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                          Text(
+                                            sprintf("%s首",
+                                                [musicsState.musics.length]),
+                                            style:
+                                                TextStyle(color: Colors.green),
+                                          )
+                                        ]),
+                                  ]))),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10.0)),
-                  onPressed: () {},
+                  // onPressed: () {},
+                  onPressed: () async {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              BlocBuilder<AudioMusicCubit, AudioMusicState>(
+                                  builder: (context, x) =>
+                                      new LoveMusicsListScreen())),
+                    );
+                  },
                 ),
               )
             ],

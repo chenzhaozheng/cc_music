@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:cc_music/bloc/audio_cubit.dart';
 import 'package:cc_music/bloc/audio_duration_cubit.dart';
+import 'package:cc_music/bloc/audio_love_musics_cubit.dart';
+import 'package:cc_music/bloc/audio_love_musics_state.dart';
 import 'package:cc_music/bloc/audio_music_cubit.dart';
 import 'package:cc_music/bloc/audio_music_state.dart';
 import 'package:cc_music/bloc/audio_musics_cubit.dart';
@@ -256,29 +258,55 @@ class _AudioPlaybackPageState extends State<AudioPlaybackPage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: <Widget>[
-                        IconButton(
-                            icon: Icon(Icons.favorite_border),
-                            onPressed: () async {
-                              final prefs =
-                                  await SharedPreferences.getInstance();
-                              print('xx');
-                              print(BlocProvider.of<AudioMusicsCubit>(context)
-                                  .getMusics());
-                              var a = json.encode(
-                                  BlocProvider.of<AudioMusicsCubit>(context)
-                                      .getMusics());
-                              print('xx');
-                              print(a);
-                              print('xx');
-                              print(json.decode(a));
-                              print('xx');
-                              prefs.setString(
-                                  'counter',
-                                  json.encode(
-                                      BlocProvider.of<AudioMusicsCubit>(context)
-                                          .getMusics()));
-                              // context.read<AudioCubit>().pause(context);
-                            }),
+                        BlocBuilder<AudioLoveMusicsCubit, AudioLoveMusicsState>(
+                          builder: (context, musicsState) =>
+                              BlocBuilder<AudioMusicCubit, AudioMusicState>(
+                            builder: (context, musicState) => IconButton(
+                                icon: BlocProvider.of<AudioLoveMusicsCubit>(
+                                            context)
+                                        .getMusics()
+                                        .any((v) =>
+                                            v.mp3Rid == musicState.music.mp3Rid)
+                                    ? Icon(Icons.favorite, color: Colors.red)
+                                    : Icon(Icons.favorite_border),
+                                onPressed: () async {
+                                  if (BlocProvider.of<AudioLoveMusicsCubit>(
+                                          context)
+                                      .getMusics()
+                                      .any((v) =>
+                                          v.mp3Rid ==
+                                          musicState.music.mp3Rid)) {
+                                    final prefs =
+                                        await SharedPreferences.getInstance();
+                                    var temp =
+                                        BlocProvider.of<AudioLoveMusicsCubit>(
+                                                context)
+                                            .getMusics();
+                                    temp.removeWhere((v) =>
+                                        v.mp3Rid == musicState.music.mp3Rid);
+                                    prefs.setString(
+                                        'counter', json.encode(temp));
+                                    BlocProvider.of<AudioLoveMusicsCubit>(
+                                            context)
+                                        .setMusics(temp);
+                                  } else {
+                                    //favorite_border favorite
+                                    final prefs =
+                                        await SharedPreferences.getInstance();
+                                    var temp =
+                                        BlocProvider.of<AudioLoveMusicsCubit>(
+                                                context)
+                                            .getMusics();
+                                    temp = temp..addAll([musicState.music]);
+                                    prefs.setString(
+                                        'counter', json.encode(temp));
+                                    BlocProvider.of<AudioLoveMusicsCubit>(
+                                            context)
+                                        .setMusics(temp);
+                                  }
+                                }),
+                          ),
+                        ),
                         IconButton(
                             icon: Icon(Icons.first_page),
                             onPressed: () {
@@ -317,10 +345,16 @@ class _AudioPlaybackPageState extends State<AudioPlaybackPage> {
                         IconButton(
                             icon: Icon(Icons.list),
                             onPressed: () async {
-                              // final prefs =
-                              //     await SharedPreferences.getInstance();
-                              // final counter = prefs.getString('counter') ?? '';
-                              // print(counter);
+                              final prefs =
+                                  await SharedPreferences.getInstance();
+                              final counter = prefs.getString('counter') ?? '';
+                              print('xxxx');
+                              print(counter);
+                              var listDynamic = jsonDecode(counter);
+                              // List<Map<String, dynamic>> listMap =
+                              //     new List<Map<String, dynamic>>.from(
+                              //         listDynamic);
+                              print(listDynamic);
                               // context.read<AudioCubit>().pause(context);
                               Navigator.push(
                                 context,

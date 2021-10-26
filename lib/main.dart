@@ -5,6 +5,7 @@ import 'dart:ui';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:cc_music/bloc/audio_cubit.dart';
 import 'package:cc_music/bloc/audio_duration_cubit.dart';
+import 'package:cc_music/bloc/audio_love_musics_cubit.dart';
 import 'package:cc_music/bloc/audio_music_cubit.dart';
 import 'package:cc_music/bloc/audio_music_state.dart';
 import 'package:cc_music/bloc/audio_musics_cubit.dart';
@@ -16,12 +17,14 @@ import 'package:cc_music/common/audio.dart';
 import 'package:cc_music/common/music.dart';
 import 'package:cc_music/music/index_page.dart';
 import 'package:cc_music/music/music_list_page.dart';
+import 'package:cc_music/post.dart';
 import 'package:cc_music/video/video_page.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'bloc/audio_search_musics_cubit.dart';
 import 'common/search_delegate.dart';
@@ -147,8 +150,27 @@ class _AudioPlayHomePageState extends State<AudioPlayHomePage>
     }
   }
 
+  _getCounter() async {
+    // 初始化存储信息，获取存储的喜欢的音乐存储到对应的bloc
+    final prefs = await SharedPreferences.getInstance();
+    final counter = prefs.getString('counter') ?? '';
+    print('getCounter');
+    print(counter);
+    if (counter != '') {
+      var listMap = jsonDecode(counter);
+      print(listMap);
+      // print(listMap[0]);
+      List<Music> listMap2 =
+          List<Music>.from(listMap.map((model) => Music.fromJson(model)));
+      // List<Post> posts =
+      //     List<Post>.from(l.map((model) => Post.fromJson(model)));
+      // List<Music> listMap = new List<Music>.from(listDynamic);
+      BlocProvider.of<AudioLoveMusicsCubit>(context).setMusics(listMap2);
+    }
+  }
+
   @override
-  void initState() {
+  Future<void> initState() {
     super.initState();
     _controller.addListener(() {
       print(_controller.text);
@@ -201,6 +223,8 @@ class _AudioPlayHomePageState extends State<AudioPlayHomePage>
         print('失去焦点');
       }
     });
+    // 初始化存储信息，获取存储的喜欢的音乐存储到对应的bloc
+    _getCounter();
   }
 
   @override
@@ -247,6 +271,9 @@ void main() {
     ),
     BlocProvider<AudioSearchMusicsCubit>(
       create: (context) => AudioSearchMusicsCubit(),
+    ),
+    BlocProvider<AudioLoveMusicsCubit>(
+      create: (context) => AudioLoveMusicsCubit(),
     ),
   ], child: AudioPlayHomePage()));
 }

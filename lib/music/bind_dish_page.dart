@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:webview_flutter/webview_flutter.dart';
+// import 'package:webview_flutter/webview_flutter.dart';
 
 class BindDishWidget extends StatefulWidget {
   final url;
@@ -11,7 +11,7 @@ class BindDishWidget extends StatefulWidget {
 }
 
 class _BindDishWidgetState extends State<BindDishWidget> {
-  WebViewController _controller;
+  // WebViewController _controller;
   String _title = "";
 
   @override
@@ -42,36 +42,36 @@ class _BindDishWidgetState extends State<BindDishWidget> {
                                 .startsWith('qrcode_page'))
                       })
             ]),
-        body: WebView(
-          initialUrl: widget.url,
-          //JS执行模式 是否允许JS执行
-          javascriptMode: JavascriptMode.unrestricted,
-          onWebViewCreated: (controller) {
-            _controller = controller;
-          },
-          onPageFinished: (url) {
-            _controller.evaluateJavascript("document.title").then((result) {
-              setState(() {
-                _title = result.replaceAll('"', '');
-              });
-            });
-          },
-          navigationDelegate: (NavigationRequest request) {
-            if (request.url.startsWith("myapp://")) {
-              print("即将打开 ${request.url}");
-
-              return NavigationDecision.prevent;
-            }
-            return NavigationDecision.navigate;
-          },
-          javascriptChannels: <JavascriptChannel>[
-            JavascriptChannel(
-                name: "share",
-                onMessageReceived: (JavascriptMessage message) {
-                  print("参数： ${message.message}");
-                }),
-          ].toSet(),
-        ),
+        // body: WebView(
+        //   initialUrl: widget.url,
+        //   //JS执行模式 是否允许JS执行
+        //   javascriptMode: JavascriptMode.unrestricted,
+        //   onWebViewCreated: (controller) {
+        //     _controller = controller;
+        //   },
+        //   onPageFinished: (url) {
+        //     _controller.evaluateJavascript("document.title").then((result) {
+        //       setState(() {
+        //         _title = result.replaceAll('"', '');
+        //       });
+        //     });
+        //   },
+        //   navigationDelegate: (NavigationRequest request) {
+        //     if (request.url.startsWith("myapp://")) {
+        //       print("即将打开 ${request.url}");
+        //
+        //       return NavigationDecision.prevent;
+        //     }
+        //     return NavigationDecision.navigate;
+        //   },
+        //   javascriptChannels: <JavascriptChannel>[
+        //     JavascriptChannel(
+        //         name: "share",
+        //         onMessageReceived: (JavascriptMessage message) {
+        //           print("参数： ${message.message}");
+        //         }),
+        //   ].toSet(),
+        // ),
       ),
     );
   }
